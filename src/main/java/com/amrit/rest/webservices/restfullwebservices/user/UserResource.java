@@ -1,6 +1,9 @@
 package com.amrit.rest.webservices.restfullwebservices.user;
 
 import jakarta.validation.Valid;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -22,12 +25,17 @@ public class UserResource {
 
     }
     @GetMapping(path = "/users/{id}")
-    public User getSingle(@PathVariable int id){
+    public EntityModel<User> getSingle(@PathVariable int id){
         User user= userDaoService.findSingle(id);
         if(user == null){
             throw new UserNotFoundException("id:"+id);
         }
-        return user;
+
+        EntityModel<User> entityModel = EntityModel.of(user);
+
+        WebMvcLinkBuilder link = linkTo(methodOn(this.getClass()).retrieveAll());
+        entityModel.add(link.withRel("all-users"));
+        return entityModel;
     }
 
     @PostMapping("/users")
